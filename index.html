@@ -499,12 +499,83 @@
             typingIndicator.style.display = 'none';
         }
 
-        function getBotResponse() {
-            const responseObj = responses[responseIndex];
-            responseIndex = (responseIndex + 1) % responses.length;
+        function getBotResponse(userMessage) {
+            // Convert user message to lowercase for matching
+            const msg = userMessage.toLowerCase();
+            let selectedResponse;
+            
+            // Try to match based on keywords, letters, or patterns in the question
+            
+            // Space/math/science related
+            if (msg.includes('space') || msg.includes('nasa') || msg.includes('satellite') || msg.includes('orbit') || msg.includes('math')) {
+                const spaceResponses = responses.filter(r => r.source.includes('NASA'));
+                selectedResponse = spaceResponses[Math.floor(Math.random() * spaceResponses.length)];
+            }
+            // Machine/mechanical related
+            else if (msg.includes('machine') || msg.includes('calculator') || msg.includes('add') || msg.includes('compute')) {
+                const machineResponses = responses.filter(r => r.source.includes('258,518') || r.source.includes('310,450'));
+                selectedResponse = machineResponses[Math.floor(Math.random() * machineResponses.length)];
+            }
+            // Technology/invention related
+            else if (msg.includes('invent') || msg.includes('patent') || msg.includes('create') || msg.includes('design')) {
+                const inventResponses = responses.filter(r => r.text.includes('invent') || r.text.includes('patent'));
+                selectedResponse = inventResponses[Math.floor(Math.random() * inventResponses.length)];
+            }
+            // Fabric/textile/clothing related
+            else if (msg.includes('fabric') || msg.includes('cloth') || msg.includes('silk') || msg.includes('lace') || msg.includes('textile')) {
+                const textileResponses = responses.filter(r => 
+                    r.text.includes('silk') || r.text.includes('lace') || r.text.includes('gauze') || 
+                    r.text.includes('fabric') || r.text.includes('textile') || r.text.includes('Cashmere'));
+                selectedResponse = textileResponses[Math.floor(Math.random() * textileResponses.length)];
+            }
+            // Women/equality/rights related
+            else if (msg.includes('woman') || msg.includes('women') || msg.includes('equal') || msg.includes('right')) {
+                const rightsResponses = responses.filter(r => 
+                    r.text.includes('married woman') || r.text.includes('ridicule') || 
+                    r.text.includes('patent in their own') || r.text.includes('freedom'));
+                selectedResponse = rightsResponses[Math.floor(Math.random() * rightsResponses.length)];
+            }
+            // Ancient/history related
+            else if (msg.includes('ancient') || msg.includes('history') || msg.includes('old') || msg.includes('tradition')) {
+                const ancientResponses = responses.filter(r => 
+                    r.text.includes('Ancient') || r.text.includes('Isis') || r.text.includes('Minerva') || 
+                    r.text.includes('thousand years') || r.text.includes('goddess'));
+                selectedResponse = ancientResponses[Math.floor(Math.random() * ancientResponses.length)];
+            }
+            // Numbers - if question contains numbers, use responses with similar numbers
+            else if (/\d/.test(msg)) {
+                // Extract first digit from user message
+                const userDigit = msg.match(/\d/)[0];
+                const numberResponses = responses.filter(r => r.text.includes(userDigit));
+                if (numberResponses.length > 0) {
+                    selectedResponse = numberResponses[Math.floor(Math.random() * numberResponses.length)];
+                }
+            }
+            // Match by first letter of first word
+            else if (msg.length > 0) {
+                const firstLetter = msg.trim()[0];
+                const letterResponses = responses.filter(r => 
+                    r.text.toLowerCase().includes(firstLetter)
+                );
+                if (letterResponses.length > 0) {
+                    selectedResponse = letterResponses[Math.floor(Math.random() * letterResponses.length)];
+                }
+            }
+            
+            // If no match found, use sequential pattern with some randomness
+            if (!selectedResponse) {
+                // Add some randomness - sometimes jump ahead or back
+                const randomOffset = Math.floor(Math.random() * 5) - 2; // -2 to +2
+                const index = (responseIndex + randomOffset + responses.length) % responses.length;
+                selectedResponse = responses[index];
+                responseIndex = (index + 1) % responses.length;
+            } else {
+                // Still increment the main index for variety
+                responseIndex = (responseIndex + 1) % responses.length;
+            }
             
             // Format the response with text and source link
-            const formattedResponse = `${responseObj.text}<br><br><small style="color: #888;">Source: <a href="${responseObj.link}" target="_blank" style="color: #667eea; text-decoration: none;">${responseObj.source}</a></small>`;
+            const formattedResponse = `${selectedResponse.text}<br><br><small style="color: #888;">Source: <a href="${selectedResponse.link}" target="_blank" style="color: #667eea; text-decoration: none;">${selectedResponse.source}</a></small>`;
             
             return formattedResponse;
         }
@@ -516,6 +587,7 @@
             
             // Add user message
             addMessage(message, true);
+            const userQuestion = message; // Store the question
             userInput.value = '';
             
             // Show typing indicator
@@ -524,7 +596,7 @@
             // Simulate bot thinking time
             setTimeout(() => {
                 hideTypingIndicator();
-                addMessage(getBotResponse());
+                addMessage(getBotResponse(userQuestion)); // Pass user question to get contextual response
             }, 1000 + Math.random() * 1000);
         }
 
