@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Women's Inventions Chatbot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 600px;
+            height: 700px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f5f5f5;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.bot {
+            justify-content: flex-start;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message-content {
+            max-width: 75%;
+            padding: 12px 16px;
+            border-radius: 15px;
+            line-height: 1.5;
+        }
+
+        .message.bot .message-content {
+            background: white;
+            color: #333;
+            border-bottom-left-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .message.user .message-content {
+            background: #667eea;
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+
+        .chat-input-container {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 10px;
+        }
+
+        #userInput {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 1em;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        #userInput:focus {
+            border-color: #667eea;
+        }
+
+        #sendButton {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        #sendButton:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        #sendButton:active {
+            transform: translateY(0);
+        }
+
+        .typing-indicator {
+            display: none;
+            padding: 10px 16px;
+            background: white;
+            border-radius: 15px;
+            border-bottom-left-radius: 5px;
+            width: fit-content;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .typing-indicator span {
+            height: 8px;
+            width: 8px;
+            background: #667eea;
+            border-radius: 50%;
+            display: inline-block;
+            margin: 0 2px;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-10px);
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #764ba2;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            💡 Chatbot
+        </div>
+        <div class="chat-messages" id="chatMessages">
+            <div class="message bot">
+                <div class="message-content">
+                    What are you wondering about today?
+                </div>
+            </div>
+            <div class="typing-indicator" id="typingIndicator">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+        <div class="chat-input-container">
+            <input type="text" id="userInput" placeholder="Type your message..." autocomplete="off">
+            <button id="sendButton">Send</button>
+        </div>
+    </div>
+
+    <script>
+        // Array of responses about women's inventions from historical sources
+        const responses = [
+            "Katherine G. Johnson co-authored NASA Technical Note D-233 in 1960, presenting mathematical expressions for determining satellite trajectories and orbital mechanics. Her calculations were critical for placing satellites over selected Earth positions—work that helped launch America into space and proved essential for the space program!",
+            
+            "Mary E. Winter patented an adding machine on May 23, 1882 (Patent No. 258,518). Her sophisticated mechanical calculator used ratchet wheels, pawls, and operating keys numbered 1-10 to perform addition up to 600. The machine included innovative features like bent pawls hinged to carrying-arms and pawl-trippers to prevent wear on the mechanism.",
+            
+            "Ancient tradition credits women with inventing the arts most necessary to civilization. Isis in Egypt was worshiped for inventing bread-making and founding agriculture. Before her time, Egyptians lived on uncooked roots and herbs. She also taught the art of healing, the manufacture of flax, and laid the foundations of Egyptian literature!",
+            
+            "The invention of silk is attributed to Si-ling-chi, wife of Emperor Hoang-ti, four thousand years before Christ. China itself was named after her! Known as Sien Tshan, the goddess of silkworms, she is still worshiped today. For ages, the secret of silk was kept from other nations, and Roman emperors paid its weight in gold for a single garment.",
+            
+            "Katherine Johnson's work at NASA involved complex orbital mechanics calculations. Her technical paper addressed how to determine azimuth angles at burnout for satellite launches, accounting for the Earth's rotation and oblateness. She worked on both eastward and westward satellite launches, proving there were no limitations based on launch direction!",
+            
+            "Mary Winter's adding machine was remarkably sophisticated for 1882. It featured two series of ratchet teeth (upper and lower), a dial plate numbered from 1 to 600, and a spring mechanism that could reset the machine to zero. Keys 1-7 operated on the upper teeth series, while keys 6, 8, 9, and 10 operated on the lower series.",
+            
+            "Minerva, the Greek goddess, was regarded as the inventor of every kind of work done by women. But she was also credited with originating agriculture and mechanics, inventing all tools of handicraft, musical instruments, war chariots, shipbuilding, and even the breaking of horses!",
+            
+            "The cotton-gin, one of the most remarkable inventions of the age, was conceived by Catharine Littlefield Greene, widow of Revolutionary General Greene. She entrusted its construction to Eli Whitney, who was boarding with her. When the wooden teeth failed, Whitney wanted to give up, but Greene's faith never wavered—she suggested using wire instead. Within ten days, a perfect model was completed!",
+            
+            "In Katherine Johnson's NASA work, she developed equations for relating satellite position in the orbital plane to latitude and longitude on a rotating Earth. Her paper included examples of satellites passing over selected positions after completing three orbits, with incremental changes calculated to account for Earth's oblateness!",
+            
+            "The New York Times wrote: 'The feminine mind is, as a rule, quicker than the masculine mind; takes hints and sees defects which would escape the average man's attention.' The Scientific American testified that women's inventions 'in their practical character and adaptation of means to effect a definite purpose, fully equal the same number of inventions made by men.'",
+            
+            "Barbara Uttmann of Saxony invented pillow-lace making when her country was on the verge of financial ruin. The art spread rapidly, and Belgium derived immense revenue from it. Three hundred years later, lace still continues to be Belgium's great source of wealth. Not only did it bring prosperity, but a great moral change for the better appeared as one of its effects!",
+            
+            "Mary Winter's adding machine patent shows her deep understanding of mechanical engineering. Her design included T-shaped keys with hinges, spiral springs for retraction, detent pawls to prevent backward movement, and stops to limit the throw of pawls. This level of mechanical sophistication was extraordinary for the era!",
+            
+            "Mheural Nisa, known as 'Light of the Harem,' invented the priceless Cashmere shawls that give employment to thousands and form one of India's principal revenue sources. She also invented Attar of Roses, the most exquisite and costly perfume. Her husband was so devoted that he caused her name and the title 'Light of the World' to be struck on India's coins!",
+            
+            "Miss Betsy Metcalf made the first straw bonnet ever manufactured in the United States in 1798. Within twelve years, Massachusetts alone produced half a million dollars' worth of straw goods. Today, that state produces six million hats and bonnets annually—all from one woman's ingenuity!",
+            
+            "Katherine Johnson's technical paper was published by NASA's Langley Research Center in September 1960. Her mathematical work enabled precise calculations for satellite recovery missions, determining exactly where a satellite would be after any number of orbital passes—critical for bringing satellites over preselected reentry points!",
+            
+            "Wood-engraving, the pioneer of all other forms of engraving, was invented by the Cunio children—twin sister and brother—at Ravenna, Italy, in the thirteenth century. The discovery of cotton as a textile fiber was attributed to the mother of the Incas, who taught the Peruvians its manufacture.",
+            
+            "Mrs. Mary E. Walton invented a method for deadening the noise of elevated railroads after Edison and other inventors had unsuccessfully tried for six months. Her device was immediately adopted by the Metropolitan and other railways. A prominent New York physician noted that the constant din of the city causes shattered nervous systems—making her invention a tremendous benefit to human health!",
+            
+            "Miss Maggie Knight invented the machine for manufacturing satchel-bottom paper bags—the kind we still use today. The Commissioner of Patents complimented her on its entire originality, noting that most inventions merely improve upon preceding ones. She refused fifty thousand dollars for her patent shortly after receiving it!",
+            
+            "Mary Winter of Galesburg, Illinois worked with Cushman W. Crary of Chicago on the adding machine patent. The machine could add columns of numbers and automatically display the running total on a dial visible through a slot in the case. When a calculation was complete, a spring mechanism would reset it to start a new column!",
+            
+            "The gimlet-pointed screw, invented by a little girl, has realized millions of dollars. A San Francisco lady's baby carriage invention brought her fourteen thousand dollars. The paper pail, invented by a Chicago lady, yields a large income. Sometimes the smallest inventions prove the most lucrative!",
+            
+            "The aquarium was invented by Madam Jeanette Power, one of the most eminent naturalists of the century. Its value to marine zoology is incalculable—rare species from different oceans can be compared, and the great Darwinian problems of evolution are being solved by its use!",
+            
+            "Katherine Johnson worked with T. H. Skopinski on the NASA technical note. Her calculations used spherical-triangle relations, elliptical orbit equations, and celestial mechanics to solve the complex problem of satellite positioning. She even accounted for the Earth's oblateness as incremental corrections in an iterative procedure!",
+            
+            "Harriet Hosmer, the celebrated sculptor, invented a process for producing marble from limestone that closely simulates the finest antique varieties—a process the Italian Government had long sought without success. But her most valuable invention is the permanent magnet as a motive power, deemed one of the most important inventions of the century!",
+            
+            "The Burden horse-shoe machine, turning out a complete shoe every three seconds, was a woman's invention. At a patent renewal in 1871, it was claimed that thirty-two million dollars had been saved to the public during just fourteen years of its use!",
+            
+            "Mary Winter's adding machine included innovative safety features. Keys had downward-projecting lugs that would strike the bottom of the case if depressed too much, preventing injury to the delicate mechanism. The machine also featured a brake system to prevent too rapid motion when resetting!",
+            
+            "Hon. Samuel Fisher, while Commissioner of Patents, said: 'Any sketch of American inventions would be imperfect which failed to do justice to the part taken by woman.' Yet despite this, the United States census failed to even enumerate women among the inventors of the country!",
+            
+            "Madame Bessani, a humble workwoman, rediscovered the lost stitch of 'Puleto di Venezia' (Venetian Point) lace from the thirteenth century. The Italian Minister of Commerce gave her letters patent with exclusive control for fifteen years. The importance of her invention to Italy is incalculable, opening an immense source of revenue and political power!",
+            
+            "Mrs. Ann Harned Manning perfected the combined action of teeth and cutters for the mower and reaper in 1817-18. She also invented a clover cleaner that proved very lucrative—though her husband took out the patents. After his death, a neighbor even robbed her of other improvements she hadn't patented!",
+            
+            "Katherine Johnson's work shows that expressions can be developed to establish the azimuth angle at burnout required to place a satellite over any selected Earth position after a given number of orbits. Her paper provided examples for both eastward and westward launches, each calculated to pass over selected positions after completing exactly three orbits!",
+            "Ancient Greek tradition credits the Muses with inventing letters and writing. Divination—that art which ruled the actions of heroes and turned the fate of empires—has come down through history as originating with women, through sibyls, priestesses, oracles, and sacred books.",
+            
+            "Gauze was invented by Pamphile, a woman of Cos. Shortly after silk was introduced to Europe, she unraveled its web and re-manufactured it into a transparent fabric known to Roman ladies as 'Coa vestis.' One of the most diaphanous fabrics of the ancient world, it was called 'The Woven Wind,' yet was strong enough to take colors and bear embroidery of silk and gold thread!",
+            
+            "Mary Winter's patent demonstrates women's mechanical genius despite the barriers they faced. The adding machine specification includes detailed drawings showing four sheets of technical diagrams—top plans, sectional elevations, and enlarged views of the ratchet wheels, pawls, and operating mechanisms!",
+            
+            "The value of the finest thread lace when wrought exceeds that of precious stones. No other art can bring about such an extraordinary increase in value from a material worth as little as flax in its unwrought state. And woman was its originator!",
+            
+            "To prepare food, woman invented and ornamented pottery. Among savage races it is still easy to trace the inception and growth of this art in woman's hands. That she was the primitive artist is quite universally conceded.",
+            
+            "The most ancient Chinese writers accord the invention of spinning to Yao, wife of the fourth emperor, four thousand years before Christ. The culture of the mulberry, the rearing of silkworms, and the manufacture of silk are still the great staple domestic industries of the Chinese people.",
+            
+            "Katherine Johnson's calculations were so precise that her NASA paper compared results with three-degree-of-freedom calculations performed on an IBM 704 computer. For the eastward launch example, her method placed the satellite just 18.6 nautical miles from the desired position—remarkable accuracy for hand calculations!",
+            
+            "Why didn't more women take out patents in their own names? Because to do so would expose them to ridicule and contempt, and a loss of position in society, which frowned upon any attempt at outside industry for women. Many patents in men's names are actually due to women's inventions!",
+            
+            "In not a single State of the Union was a married woman held to possess a right to her earnings within the family. Should she obtain a patent, she would hold no legal right to contract or license anyone to use her invention. Her husband could take it, sell it, give it away, or refuse to use it—and she would have no remedy!",
+            
+            "Recent inventions by women include: a volcanic furnace for smelting ore, a fire-escape, devices for correct pen-holding in schools, a self-fastening button, a portable reservoir for fires, improvements for heating railway cars without fire, a danger-signal for street crossings, and a deep-sea telescope for inspecting ship bottoms without dry-docking!",
+            
+            "Woman invented systems for improved drainage, better ventilation, forcing water to great heights and distances, and a thousand household appliances. Every invention, however small, develops new industries, provides work for multitudes, increases commercial activity, and renders life more desirable!",
+            
+            "During King George III's reign, England averaged only fourteen patents yearly. Now it averages five thousand, while the United States averages eighteen thousand. This difference is directly traceable to the progress of freedom and education. Woman's restricted education and political power means her degradation reacts injuriously upon the entire race!",
+            
+            "Madame de Coudray invented the manikin, through which knowledge of physiology has been much more widely diffused than would otherwise have been possible. Many delicate surgical instruments owe their origin to women, as does the adaptation of wax for recording medical observations.",
+            
+            "The Eureka street-sweeper was invented by a Hoboken lady after her dress was spattered with mud by a clumsy machine in New York one day. Possessed of mechanical genius, she determined to create a sweeper that would do its work more perfectly. Her success was great, and her invention a vast improvement upon all predecessors!"
+        ];
+
+        const chatMessages = document.getElementById('chatMessages');
+        const userInput = document.getElementById('userInput');
+        const sendButton = document.getElementById('sendButton');
+        const typingIndicator = document.getElementById('typingIndicator');
+
+        let responseIndex = 0;
+
+        function addMessage(content, isUser = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.textContent = content;
+            
+            messageDiv.appendChild(contentDiv);
+            
+            // Insert before typing indicator
+            chatMessages.insertBefore(messageDiv, typingIndicator);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            typingIndicator.style.display = 'block';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            typingIndicator.style.display = 'none';
+        }
+
+        function getBotResponse() {
+            const response = responses[responseIndex];
+            responseIndex = (responseIndex + 1) % responses.length;
+            return response;
+        }
+
+        function handleSend() {
+            const message = userInput.value.trim();
+            
+            if (message === '') return;
+            
+            // Add user message
+            addMessage(message, true);
+            userInput.value = '';
+            
+            // Show typing indicator
+            showTypingIndicator();
+            
+            // Simulate bot thinking time
+            setTimeout(() => {
+                hideTypingIndicator();
+                addMessage(getBotResponse());
+            }, 1000 + Math.random() * 1000);
+        }
+
+        sendButton.addEventListener('click', handleSend);
+        
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                handleSend();
+            }
+        });
+
+        // Focus input on load
+        userInput.focus();
+    </script>
+</body>
+</html>
